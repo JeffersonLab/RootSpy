@@ -46,3 +46,19 @@ add_subdirectory(src/RSAggregator)
 add_subdirectory(src/RSArchiver)
 # add_subdirectory(src/RSMonitor)
 # add_subdirectory(src/RSDumpTree)
+
+# Install targets
+install(TARGETS RootSpy RootSpy-client RSAI RSTimeSeries RSelog RSAggregator RSArchiver
+    RUNTIME DESTINATION bin               # For executables
+    LIBRARY DESTINATION lib               # For shared libraries
+    ARCHIVE DESTINATION lib               # For static libraries
+)
+
+# Glob all headers matching the pattern src/lib*/*.h and install them
+file(GLOB LIB_HEADERS "src/lib*/*.h")
+install(FILES ${LIB_HEADERS} DESTINATION include)
+
+# Set the CMAKE_INSTALL_PREFIX if not set
+if(NOT DEFINED CMAKE_INSTALL_PREFIX)
+    set(CMAKE_INSTALL_PREFIX /usr/local)
+endif()
