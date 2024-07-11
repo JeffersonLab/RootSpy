@@ -12,7 +12,7 @@
 
 #include "hinfo_t.h"
 #include "rs_netdevice.h"
-#include "/home/angen/work/2024.06.16.RootSpy/RootSpy/src/libRootSpy/rs_udpmessage.h"
+#include "rs_udpmessage.h"
 #include "rs_serialized.h"
 
 #include <vector>
