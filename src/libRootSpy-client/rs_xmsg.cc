@@ -96,7 +96,7 @@ rs_xmsg::rs_xmsg(string &udl, string &name, bool connect_to_xmsg):pub_con(NULL)
 			char hostname[256];
 			gethostname(hostname, 256);
 			char str[512];
-			sprintf(str, "rs_%s_%d", hostname, getpid());
+			snprintf(str, 512, "rs_%s_%d", hostname, getpid());
 			myname = string(str);
 
 			cout<<"---------------------------------------------------"<<endl;
@@ -255,7 +255,7 @@ void rs_xmsg::SendMessage(string servername, string command)
 //---------------------------------
 void rs_xmsg::SendMessage(string servername, string command, xmsg::proto::Payload &payload)
 {
-	auto buffer = std::vector<std::uint8_t>(payload.ByteSize());
+	auto buffer = std::vector<std::uint8_t>(payload.ByteSizeLong());
 	payload.SerializeToArray( buffer.data(), buffer.size() );
 	SendMessage( servername, command, std::move(buffer), "xmsg::proto::Payload" );
 }
@@ -1111,8 +1111,8 @@ void rs_xmsg::RegisterHistograms(string server, RSPayloadMap &payload_map)
 
 		char pname_hnamepath[256];
 		char pname_TMessage[256];
-		sprintf(pname_hnamepath, "hnamepath%d", i);
-		sprintf(pname_TMessage, "TMessage%d", i);
+		snprintf(pname_hnamepath, 256, "hnamepath%d", i);
+		snprintf(pname_TMessage, 256, "TMessage%d", i);
 
 		// Confirm all items exist in payload
 		int M = payload_map.count(pname_hnamepath) + payload_map.count(pname_TMessage);
