@@ -170,7 +170,7 @@ void DRootSpy::Initialize(pthread_rwlock_t *rw_lock, string myUDL)
 		char hostname[256];
 		gethostname(hostname, 256);
 		char str[512];
-		sprintf(str, "rs_%s_%d", hostname, getpid());
+		snprintf(str, 256, "rs_%s_%d", hostname, getpid());
 		myname = string(str);
 	}
 
@@ -561,7 +561,7 @@ void DRootSpy::SendMessage(string servername, string command)
 //---------------------------------
 void DRootSpy::SendMessage(string servername, string command, xmsg::proto::Payload &payload)
 {
-	auto buffer = std::vector<std::uint8_t>(payload.ByteSize());
+	auto buffer = std::vector<std::uint8_t>(payload.ByteSizeLong());
 	payload.SerializeToArray( buffer.data(), buffer.size() );
 	SendMessage( servername, command, std::move(buffer), "xmsg::proto::Payload" );
 }
