@@ -62,7 +62,7 @@
 #include <cstdint>
 using namespace std;
 
-#include </home/angen/work/2024.06.16.RootSpy/RootSpy/src/libRootSpy-client/curl/include/curl/curl.h>
+#include <curl/curl.h>
 
 //=======================================================
 // Global scope routines
