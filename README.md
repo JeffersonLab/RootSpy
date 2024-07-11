@@ -7,6 +7,8 @@ RootSpy has a few dependencies. Some of these may already be installed on your s
 ~~~bash
 conda create -y --prefix ./cenv curl zeromq protobuf root doxygen
 conda activate ./cenv
+export CMAKE_PREFIX_PATH=${CONDA_PREFIX}
+# setenv CMAKE_PREFIX_PATH ${CONDA_PREFIX}
 ~~~
 
 Note that the above should automatically set your 'CMAKE_PREFIX_PATH' environment variable when the conda environment is activated. This should allow the RootSpy cmake configuration to find them. 
@@ -15,9 +17,10 @@ Note that the above should automatically set your 'CMAKE_PREFIX_PATH' environmen
 ~~~bash
 git clone https://github.com/JeffersonLab/xmsg-cpp
 # Need to change C++ standard to at least 17
-sed -i '' 's/CMAKE_CXX_STANDARD 14/CMAKE_CXX_STANDARD 20/' xmsg-cpp/CMakeLists.txt
+sed -i 's/CMAKE_CXX_STANDARD 14/CMAKE_CXX_STANDARD 20/' xmsg-cpp/CMakeLists.txt
 export xmsg_ROOT=${PWD}/opt
-cmake -S xmsg-cpp -B xmsg-cpp.build -DCMAKE_INSTALL_PREFIX=${xmsg_ROOT} -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
+# setenv xmsg_ROOT ${PWD}/opt
+cmake -S xmsg-cpp -B xmsg-cpp.build -DCMAKE_INSTALL_PREFIX=${xmsg_ROOT} -DXMSG_BUILD_TESTS=
 nice cmake --build xmsg-cpp.build --target install -j32
 ~~~
 
@@ -25,7 +28,8 @@ nice cmake --build xmsg-cpp.build --target install -j32
 ~~~bash
 git clone https://github.com/JeffersonLab/cmsg
 export cmsg_ROOT=${PWD}/opt
-cmake -S cmsg -B cmsg.build -DCODA_INSTALL=${cmsg_ROOT} -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
+# setenv cmsg_ROOT ${PWD}/opt
+cmake -S cmsg -B cmsg.build -DCODA_INSTALL=${cmsg_ROOT}
 nice cmake --build cmsg.build --target install -j32
 ~~~
 
@@ -33,6 +37,7 @@ nice cmake --build cmsg.build --target install -j32
 ~~~bash
 git clone https://github.com/JeffersonLab/RootSpy
 export RootSpy_ROOT=${PWD}/opt 
+# setenv RootSpy_ROOT ${PWD}/opt 
 cmake -S RootSpy -B RootSpy.build -DCMAKE_INSTALL_PREFIX=${RootSpy_ROOT}
 nice cmake --build RootSpy.build -j32
 ~~~
