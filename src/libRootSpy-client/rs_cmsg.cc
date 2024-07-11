@@ -128,7 +128,7 @@ rs_cmsg::rs_cmsg(string &udl, string &name, bool connect_to_cmsg)
 		char hostname[256];
 		gethostname(hostname, 256);
 		char str[512];
-		sprintf(str, "rs_%s_%d", hostname, getpid());
+		snprintf(str, 512, "rs_%s_%d", hostname, getpid());
 		myname = string(str);
 
 		cout<<"---------------------------------------------------"<<endl;
