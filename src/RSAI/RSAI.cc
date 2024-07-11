@@ -180,7 +180,7 @@ void BeginRun()
 	char hostname[256];
 	gethostname(hostname, 256);
 	char str[512];
-	sprintf(str, "RSAI_%d", getpid());
+	snprintf(str, 512,  "RSAI_%d", getpid());
 	CMSG_NAME = string(str);
 	cout << "Full UDL is " << ROOTSPY_UDL << endl;
 	if( USE_CMSG ) RS_CMSG = new rs_cmsg(ROOTSPY_UDL, CMSG_NAME);
@@ -294,16 +294,16 @@ void MainLoop(void)
 						char fname_base[256];
 						if( ipad == 0 ){
 							// Whole canvas excludes pad from fname
-							sprintf(fname_base, "%s_%04d.png", basename.c_str(), ++CHUNK_COUNTER[basename][ipad]);
+							snprintf(fname_base, 256, "%s_%04d.png", basename.c_str(), ++CHUNK_COUNTER[basename][ipad]);
 						}else if( pad_name == default_pad_name.str() ){
 							// Use pad number in fname
-							sprintf(fname_base, "%s-%02d_%04d.png", basename.c_str(), ipad, ++CHUNK_COUNTER[basename][ipad]);
+							snprintf(fname_base, 256, "%s-%02d_%04d.png", basename.c_str(), ipad, ++CHUNK_COUNTER[basename][ipad]);
 						}else{
 							// Use pad name in fname
-							sprintf(fname_base, "%s-%s_%04d.png", basename.c_str(), pad_name.c_str(), ++CHUNK_COUNTER[basename][ipad]);
+							snprintf(fname_base, 256, "%s-%s_%04d.png", basename.c_str(), pad_name.c_str(), ++CHUNK_COUNTER[basename][ipad]);
 						}
 						char fname[512];
-						sprintf(fname, "%s/%s",  OUTPUT_DIR.c_str(), fname_base);
+						snprintf(fname, 256, "%s/%s",  OUTPUT_DIR.c_str(), fname_base);
 
 						// Get pad of interest
 						if (pad) {
@@ -329,7 +329,7 @@ void MainLoop(void)
 
 							if( ! SYMLINK_DIR.empty() ){
 								char fname_sym[256];
-								sprintf( fname_sym, "%s/%s", SYMLINK_DIR.c_str(), fname_base);
+								snprintf( fname_sym, 256, "%s/%s", SYMLINK_DIR.c_str(), fname_base);
 								cout << "    - Creating symlink " << fname << " <- " << fname_sym <<endl;
 								symlink(fname, fname_sym);
 							}
