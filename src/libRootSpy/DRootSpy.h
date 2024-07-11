@@ -38,8 +38,8 @@ using namespace cmsg;
 
 
 #include <memory> 
-#include </home/angen/work/2024.06.16.RootSpy/RootSpy/xmsgbuild/opt/usr/local/include/xmsg/util.h>
-#include </home/angen/work/2024.06.16.RootSpy/RootSpy/xmsgbuild/opt/usr/local/include/xmsg/xmsg.h>
+#include <xmsg/util.h>
+#include <xmsg/xmsg.h>
 using namespace xmsg;
 
 #ifndef _DBG_
