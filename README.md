@@ -1,5 +1,45 @@
 
 
+# Installation Instructions
+
+RootSpy has a few dependencies. Some of these may already be installed on your system and others may be installed using `conda`. Here is a command to create a new, local conda environment and install all of the dependencies there. Omit any from the conda install that you do not need. 
+
+~~~bash
+conda create -y --prefix ./cenv curl zeromq protobuf root doxygen
+conda activate ./cenv
+~~~
+
+Note that the above should automatically set your 'CMAKE_PREFIX_PATH' environment variable when the conda environment is activated. This should allow the RootSpy cmake configuration to find them. 
+
+### Build xmsg-cpp
+~~~bash
+git clone https://github.com/JeffersonLab/xmsg-cpp
+# Need to change C++ standard to at least 17
+sed -i '' 's/CMAKE_CXX_STANDARD 14/CMAKE_CXX_STANDARD 20/' xmsg-cpp/CMakeLists.txt
+export xmsg_ROOT=${PWD}/opt
+cmake -S xmsg-cpp -B xmsg-cpp.build -DCMAKE_INSTALL_PREFIX=${xmsg_ROOT} -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
+nice cmake --build xmsg-cpp.build --target install -j32
+~~~
+
+## Build cmsg
+~~~bash
+git clone https://github.com/JeffersonLab/cmsg
+export cmsg_ROOT=${PWD}/opt
+cmake -S cmsg -B cmsg.build -DCODA_INSTALL=${cmsg_ROOT} -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
+nice cmake --build cmsg.build --target install -j32
+~~~
+
+## Build RootSpy
+~~~bash
+git clone https://github.com/JeffersonLab/RootSpy
+export RootSpy_ROOT=${PWD}/opt 
+cmake -S RootSpy -B RootSpy.build -DCMAKE_INSTALL_PREFIX=${RootSpy_ROOT}
+nice cmake --build RootSpy.build -j32
+~~~
+
+<hr>
+<hr>
+
 setenv INSTALLDIR /work/epsci/angen/2024.07.02.RootSpy/opt/usr/local
 
 ## Setup Root Env
