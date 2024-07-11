@@ -7,8 +7,8 @@
 //#include <iomanip>
 //using namespace std;
 
-#include </home/angen/work/2024.06.16.RootSpy/RootSpy/src/libRootSpy-client/rs_cmsg.h>
-#include </home/angen/work/2024.06.16.RootSpy/RootSpy/src/libRootSpy-client/rs_xmsg.h>
+#include <rs_cmsg.h>
+#include <rs_xmsg.h>
 
 class rs_mainframe;
 class rs_cmsg;
