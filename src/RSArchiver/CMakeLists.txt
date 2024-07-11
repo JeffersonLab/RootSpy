@@ -1,14 +1,5 @@
-# Minimum required CMake version
-cmake_minimum_required(VERSION 3.0)
-cmake_policy(SET CMP0074 NEW)
-
 # Project name
 project(RSAchiver)
-link_directories(${ROOT_LIBRARY_DIR})
-link_directories(${CMSG_ROOT}/Linux-x86_64/lib)
-link_directories(${xmsg_DIR}/../..)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/RSAchiver)
-
 
 # Add executable for RArchiver
 add_executable(RSArchiver HTMLOutputGenerator.cc INIReader.cc PDFOutputGenerator.cc RSArchiver.cc ini.c)

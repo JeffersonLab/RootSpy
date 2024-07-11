@@ -1,13 +1,5 @@
-# Minimum required CMake version
-cmake_minimum_required(VERSION 3.0)
-cmake_policy(SET CMP0074 NEW)
-
 # Project name
 project(RSelog)
-link_directories(${ROOT_LIBRARY_DIR})
-link_directories(${CMSG_ROOT}/Linux-x86_64/lib)
-link_directories(${xmsg_DIR}/../..)
-
 
 # Add executable for RSelog
 add_executable(RSelog RSelog.cc)
