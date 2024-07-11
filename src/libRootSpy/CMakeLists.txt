@@ -1,7 +1,5 @@
 project(libRootSpy)
 
-# Define the library target
-add_library(RootSpy DRootSpy.cc)
+add_library(RootSpy SHARED DRootSpy.cc)
 
-# Assuming you have a target named 'your_target_name'
-target_compile_options(RootSpy PRIVATE -fpermissive)
+target_link_libraries(RootSpy ${ROOT_LIBRARIES} ${CMSG_LIBRARIES} ${xmsg_LIBRARIES} ${Protobuf_LIBRARIES})
