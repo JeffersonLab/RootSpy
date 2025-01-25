@@ -38,6 +38,8 @@
 #include <TDirectory.h>
 #include <TGTab.h>
 #include <TLatex.h>
+#include <TVirtualX.h>
+#include <TObjString.h>
 
 
 #include "RSTab.h"
