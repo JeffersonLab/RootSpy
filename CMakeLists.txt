@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Find required packages
 find_package(xmsg REQUIRED)
-find_package(ROOT REQUIRED)
+find_package(ROOT REQUIRED COMPONENTS Core RIO Hist Gui GuiBld RootAuth)
 find_package(Protobuf REQUIRED)
 find_package(ZeroMQ REQUIRED)
 find_package(CURL REQUIRED)
@@ -24,9 +24,12 @@ add_compile_definitions(HAVE_CMSG=1)
 set(CMSG_LIBRARIES cmsgRegex  cMsg  cMsgxx)
 set(xmsg_LIBRARIES xmsg)
 
+# Ensure symbols are not hidden so cling can find them
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--export-dynamic")
 
 # Include directories
 include_directories(${ROOT_INCLUDE_DIRS})
+include_directories(${Protobuf_INCLUDE_DIR})
 include_directories(${xmsg_DIR}/../../../include)
 include_directories(${CMSG_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/libRootSpy-client)
@@ -44,11 +47,12 @@ add_subdirectory(src/RSTimeSeries)
 add_subdirectory(src/RSelog)
 add_subdirectory(src/RSAggregator)
 add_subdirectory(src/RSArchiver)
+add_subdirectory(src/RootSpy)
 # add_subdirectory(src/RSMonitor)
 # add_subdirectory(src/RSDumpTree)
 
 # Install targets
-install(TARGETS RootSpy RootSpy-client RSAI RSTimeSeries RSelog RSAggregator RSArchiver
+install(TARGETS RootSpyExe RootSpy RootSpy-client RSAI RSTimeSeries RSelog RSAggregator RSArchiver
     RUNTIME DESTINATION bin               # For executables
     LIBRARY DESTINATION lib               # For shared libraries
     ARCHIVE DESTINATION lib               # For static libraries
