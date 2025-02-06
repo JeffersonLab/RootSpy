@@ -67,6 +67,7 @@ install(TARGETS RootSpyExe RootSpy RootSpy-client RSAI RSTimeSeries RSelog RSAgg
 # Glob all headers matching the pattern src/lib*/*.h and install them
 file(GLOB LIB_HEADERS "src/lib*/*.h")
 install(FILES ${LIB_HEADERS} DESTINATION include)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/include/ DESTINATION include)
 
 # Set the CMAKE_INSTALL_PREFIX if not set
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
