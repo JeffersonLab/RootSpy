@@ -27,6 +27,7 @@
 #include <iostream>
 
 #include "macro_info_t.h"
+#include <rs_global_root_lock.h>
 
 #include <TFile.h>
 #include <TDirectory.h>
@@ -56,9 +57,10 @@ public:
 
 		typedef map<string, const xmsg::proto::Data*> RSPayloadMap;
 
-		DRootSpy(string udl, string myname="");
+		DRootSpy(                                string udl            , string myname="");
+		DRootSpy(RSLock           *rw_lock=NULL, string udl="<default>", string myname="");
 		DRootSpy(pthread_rwlock_t *rw_lock=NULL, string udl="<default>", string myname="");
-		void Initialize(pthread_rwlock_t *rw_lock, string udl);
+		void Initialize(RSLock *rw_lock, string udl);
 		virtual ~DRootSpy();
 
 		void ConnectToCMSG(void);
@@ -167,7 +169,7 @@ public:
 		cMsgSubscriptionConfig *cMsgSubConfig;
 		xmsg::xMsg *xmsgp;
 		xmsg::ProxyConnection *pub_con;
-		bool own_gROOTSPY_RW_LOCK;
+		bool own_gROOTSPY_RW_LOCK = false;
 		TDirectory *hist_dir; // save value of gDirectory used when forming response to "list hist" request
 		string myname;
 		string myudl;

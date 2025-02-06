@@ -34,6 +34,7 @@ include_directories(${xmsg_DIR}/../../../include)
 include_directories(${CMSG_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/libRootSpy-client)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/libRootSpy)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/include)
 
 # Library directories
 link_directories(${ROOT_LIBRARY_DIR})

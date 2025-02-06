@@ -114,9 +114,20 @@ DRootSpy::DRootSpy(string udl, string myname):myname(myname)
 // DRootSpy    (Constructor)
 //---------------------------------
 //TODO: documentation comment.
-DRootSpy::DRootSpy(pthread_rwlock_t *rw_lock, string udl, string myname):myname(myname)
+DRootSpy::DRootSpy(RSLock *rw_lock, string udl, string myname):myname(myname)
 {
 	Initialize(rw_lock, udl);
+}
+
+//---------------------------------
+// DRootSpy    (Constructor)
+//---------------------------------
+//TODO: documentation comment.
+DRootSpy::DRootSpy(pthread_rwlock_t *rw_lock, string udl, string myname):myname(myname)
+{
+	auto rs_rw_lock = new RSPthreadLock( rw_lock );
+	own_gROOTSPY_RW_LOCK = true;
+	Initialize(rs_rw_lock, udl);
 }
 
 //---------------------------------
@@ -125,7 +136,7 @@ DRootSpy::DRootSpy(pthread_rwlock_t *rw_lock, string udl, string myname):myname(
 /// This is called from the constructors and should not be
 /// called from anywhere else.
 //---------------------------------
-void DRootSpy::Initialize(pthread_rwlock_t *rw_lock, string myUDL)
+void DRootSpy::Initialize(RSLock *rw_lock, string myUDL)
 {
 
 	// These are used help profile the program
@@ -144,21 +155,23 @@ void DRootSpy::Initialize(pthread_rwlock_t *rw_lock, string myUDL)
 	// in the RSINFO::sum_dir directory. (Useful for RSAggregator)
 	advertise_sum_hists_only = false;
 
-	// Initialize the gROOTSPY_RW_LOCK global either with the user
-	// supplied rw_lock or by allocating our own.
-	if(rw_lock){
-		// User provided rw_lock for locking ROOT global
-		gROOTSPY_RW_LOCK = rw_lock;
-		own_gROOTSPY_RW_LOCK = false;
-	}else{
-		// Create our own rw_lock. Make it shared.
-		pthread_rwlockattr_t attr;
-		pthread_rwlockattr_init(&attr);
-		pthread_rwlockattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
-		gROOTSPY_RW_LOCK = new pthread_rwlock_t;
-		pthread_rwlock_init(gROOTSPY_RW_LOCK, &attr);
-		own_gROOTSPY_RW_LOCK = true;
-	}
+	// Copy provided lock pointer to global memory (see src/include/rs_global_root_lock.h for details)
+	gROOTSPY_RW_LOCK = rw_lock;
+	// // Initialize the gROOTSPY_RW_LOCK global either with the user
+	// // supplied rw_lock or by allocating our own.
+	// if(rw_lock){
+	// 	// User provided rw_lock for locking ROOT global
+	// 	gROOTSPY_RW_LOCK = rw_lock;
+	// 	own_gROOTSPY_RW_LOCK = false;
+	// }else{
+	// 	// Create our own rw_lock. Make it shared.
+	// 	pthread_rwlockattr_t attr;
+	// 	pthread_rwlockattr_init(&attr);
+	// 	pthread_rwlockattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+	// 	gROOTSPY_RW_LOCK = new pthread_rwlock_t;
+	// 	pthread_rwlock_init(gROOTSPY_RW_LOCK, &attr);
+	// 	own_gROOTSPY_RW_LOCK = true;
+	// }
 
 	// Initialize member data
 	pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
