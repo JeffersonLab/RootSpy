@@ -27,6 +27,11 @@ set(xmsg_LIBRARIES xmsg)
 # Ensure symbols are not hidden so cling can find them
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--export-dynamic")
 
+# For GCC and Clang, disable deprecated declarations warnings globally.
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-Wno-deprecated-declarations)
+endif()
+
 # Include directories
 include_directories(${ROOT_INCLUDE_DIRS})
 include_directories(${Protobuf_INCLUDE_DIR})
