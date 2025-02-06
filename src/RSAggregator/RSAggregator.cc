@@ -146,7 +146,8 @@ void signal_usr1_handler(int signum)
 	cerr << "received signal " << signum << "..." << endl;
 
 	vector<DRootSpy::hinfo_t> hinfos;
-	pthread_rwlock_rdlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_read_lock();
+	// pthread_rwlock_rdlock(gROOTSPY_RW_LOCK);
 	if( gDirectory )
 		if( RS_XMSG_DESTINATIONS ) RS_XMSG_DESTINATIONS->addRootObjectsToList(gDirectory, hinfos);
 
@@ -159,7 +160,8 @@ void signal_usr1_handler(int signum)
 	if( RS_XMSG_DESTINATIONS ) RS_XMSG_DESTINATIONS->GetMacroInfos( macros );
 	uint32_t Nmacros_dest = macros.size();
 
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 
 	_DBG_ << "===== I Have " << hinfos.size() << " histograms!" << endl;
 	_DBG_ << "===== I Have  " << Nmacros_dest << " macros from dest!" << endl;

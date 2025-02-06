@@ -62,7 +62,7 @@ string gROOTSPY_PROGRAM_NAME = "rootspy-server";
 DRootSpy *gROOTSPY = NULL;
 //sem_t RootSpy_final_sem;
 atomic<bool> process_finals(false);
-pthread_rwlock_t *gROOTSPY_RW_LOCK = NULL;
+RSLock *gROOTSPY_RW_LOCK = NULL;
 vector<RS_QUEUED_MACRO_t> QUEUED_MACROS;
 
 //...................................................
@@ -174,9 +174,11 @@ void DRootSpy::Initialize(RSLock *rw_lock, string myUDL)
 	// }
 
 	// Initialize member data
-	pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_read_lock();
+	// pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
 	hist_dir = gDirectory;
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 	
 	// Create a unique name for ourself if not already specified
 	if( myname.empty() ){
@@ -258,7 +260,8 @@ void DRootSpy::Initialize(RSLock *rw_lock, string myUDL)
 		string fname = strlen(ROOTSPY_DEBUG)>0 ? ROOTSPY_DEBUG:"rs_stats.root";
 		cout << "ROOTSPY_DEBUG is set. Will write stats to \"" << fname << "\"" << endl;
 
-		pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->acquire_write_lock();
+		// pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
 		debug_file = new TFile(fname.c_str(), "RECREATE");
 		
 		hcounts = new TH1I("counts", "Sampling counts", kNCOUNTERS, 0, kNCOUNTERS);
@@ -282,7 +285,8 @@ void DRootSpy::Initialize(RSLock *rw_lock, string myUDL)
 		
 		hist_dir->cd();
 		
-		pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->release_lock();
+		// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 		
 		// Launch thread to record samples for debugging
 		pthread_create(&mydebugthread, NULL, DebugSamplerC, this);
@@ -326,7 +330,8 @@ DRootSpy::~DRootSpy()
 		
 		cout << "--- Closing ROOTSPY_DEBUG root file ----" << endl;
 	
-		pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->acquire_write_lock();
+		// pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
 		TDirectory *savedir = gDirectory;
 
 		double nsamples = (double)hcounts->GetBinContent(1);
@@ -343,7 +348,8 @@ DRootSpy::~DRootSpy()
 		debug_file = NULL;
 		
 		savedir->cd();
-		pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->release_lock();
+		// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 	}
 	
 	if(own_gROOTSPY_RW_LOCK && gROOTSPY_RW_LOCK!=NULL){
@@ -517,16 +523,20 @@ void* DRootSpy::DebugSampler(void)
 
 		hcounts->Fill(kNSAMPLES);
 
-		if(!pthread_rwlock_tryrdlock(gROOTSPY_RW_LOCK)){
-			pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
-		}else{
-			hcounts->Fill(kREADLOCKED);
-		}
-		if(!pthread_rwlock_trywrlock(gROOTSPY_RW_LOCK)){
-			pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
-		}else{
-			hcounts->Fill(kWRITELOCKED);
-		}
+		// kREADLOCKED and kWRITELOCKED disabled due to 
+		// RSLock no longer gurantees access to pthread_rw_lock_t.
+		// if(!pthread_rwlock_tryrdlock(gROOTSPY_RW_LOCK)){
+		// 	gROOTSPY_RW_LOCK->release_lock();
+		// 	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		// }else{
+		// 	hcounts->Fill(kREADLOCKED);
+		// }
+		// if(!pthread_rwlock_trywrlock(gROOTSPY_RW_LOCK)){
+		// 	gROOTSPY_RW_LOCK->release_lock();
+		// 	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		// }else{
+		// 	hcounts->Fill(kWRITELOCKED);
+		// }
 
 		if(in_callback)      hcounts->Fill(kINCALLBACK);
 		if(in_list_hists)    hcounts->Fill(kIN_LIST_HISTS);
@@ -897,7 +907,8 @@ void DRootSpy::listHists(cMsgMessage &response)
 	in_list_hists = true;
 
 	// Lock access to ROOT global while we access it
-	pthread_rwlock_rdlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_read_lock();
+	// pthread_rwlock_rdlock(gROOTSPY_RW_LOCK);
 
 	hist_dir = gDirectory;
 	if( advertise_sum_hists_only ){
@@ -916,7 +927,8 @@ void DRootSpy::listHists(cMsgMessage &response)
 	if( hist_dir) addRootObjectsToList(hist_dir, hinfos);
 	
 	// Release lock on ROOT global
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 	
 	// If any histograms were found, copy their info into the message
 	if(hinfos.size()>0) {
@@ -972,7 +984,8 @@ void DRootSpy::listHists(string sender)
 	in_list_hists = true;
 
 	// Lock access to ROOT global while we access it
-	pthread_rwlock_rdlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_read_lock();
+	// pthread_rwlock_rdlock(gROOTSPY_RW_LOCK);
 
 	hist_dir = gDirectory;
 	if( advertise_sum_hists_only ){
@@ -991,7 +1004,8 @@ void DRootSpy::listHists(string sender)
 	addRootObjectsToList(hist_dir, hinfos);
 	
 	// Release lock on ROOT global
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 	
 	// If any histograms were found, copy their info into the message
 	xmsg::proto::Payload payload;
@@ -1042,7 +1056,8 @@ void DRootSpy::getHist(cMsgMessage &response, string &hnamepath, bool send_messa
 	if(path.find(": ") == 0) path.erase(0,2);
 
 	// Lock access to ROOT global while we access it
-	pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_write_lock();
+	// pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
 
 	// Get pointer to ROOT object
 	TDirectory *savedir = gDirectory;
@@ -1052,7 +1067,8 @@ void DRootSpy::getHist(cMsgMessage &response, string &hnamepath, bool send_messa
 	
 	// If object not found, release lock on ROOT global and return
 	if(!obj){
-		pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->release_lock();
+		// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 		_DBG_ << "Could not find \"" << hname << "\" in path\"" << path <<"\"!" << endl;
 		in_get_hist = false;
 		return;
@@ -1069,7 +1085,8 @@ void DRootSpy::getHist(cMsgMessage &response, string &hnamepath, bool send_messa
 
 	// Finished with TMessage object. Free it and release lock on ROOT global
 	delete tm;
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 
 	// Send message containing histogram (asynchronously)
 	if(send_message){
@@ -1108,7 +1125,8 @@ void DRootSpy::getHist(string &sender, string &hnamepath, bool send_message)
 	}
 
 	// Lock access to ROOT global while we access it
-	pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_write_lock();
+	// pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
 
 	// Get pointer to ROOT object
 	TDirectory *savedir = gDirectory;
@@ -1119,7 +1137,8 @@ void DRootSpy::getHist(string &sender, string &hnamepath, bool send_message)
 	// If object not found, release lock on ROOT global and return
 	if(!obj){
 		// (this may happen frequently for histograms provided by other processes)
-		pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->release_lock();
+		// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 		_DBG_ << "Could not find \"" << hname << "\" in path\"" << path <<"\"!" << endl;
 		if(VERBOSE>3) _DBG_ << "Could not find \"" << hname << "\" in path\"" << path <<"\"!" << endl;
 		in_get_hist = false;
@@ -1144,7 +1163,8 @@ void DRootSpy::getHist(string &sender, string &hnamepath, bool send_message)
 
 	// Finished with TMessage object. Free it and release lock on ROOT global
 	delete tm;
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 
 	// Send message containing histogram (asynchronously)
 	if(send_message){
@@ -1189,7 +1209,8 @@ void DRootSpy::getHistUDP(void *vresponse, string hnamepath, uint32_t addr32, ui
 	if(path[path.length()-1]==':')path += "/";
 
 	// Lock access to ROOT global while we access it
-	pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_write_lock();
+	// pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
 
 	// Get pointer to ROOT object
 	TDirectory *savedir = gDirectory;
@@ -1199,7 +1220,8 @@ void DRootSpy::getHistUDP(void *vresponse, string hnamepath, uint32_t addr32, ui
 	
 	// If object not found, release lock on ROOT global and return
 	if(!obj){
-		pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->release_lock();
+		// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 		return;
 	}
 
@@ -1229,7 +1251,8 @@ void DRootSpy::getHistUDP(void *vresponse, string hnamepath, uint32_t addr32, ui
 
 		// Finished with TMessage object. Free it and release lock on ROOT global
 		delete tm;
-		pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->release_lock();
+		// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 
 		if(VERBOSE>2) _DBG_ << "Message size too big for UDP (" << len << ">65000) sending as cMsg ..." << endl;
 		uint64_t tsending = (uint64_t)time(NULL);
@@ -1261,7 +1284,8 @@ void DRootSpy::getHistUDP(void *vresponse, string hnamepath, uint32_t addr32, ui
 
 		// Finished with TMessage object. Free it and release lock on ROOT global
 		delete tm;
-		pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->release_lock();
+		// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 
 		if( len<65000 ){
 
@@ -1448,7 +1472,8 @@ void DRootSpy::getMacro(cMsgMessage &response, string &hnamepath)
 	macro_info_t &the_macro = the_macro_itr->second;
 
 	// Lock access to ROOT global while we access it
-	pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_write_lock();
+	// pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
 
 	TDirectory *savedir = gDirectory;
 	
@@ -1501,7 +1526,8 @@ void DRootSpy::getMacro(cMsgMessage &response, string &hnamepath)
 
 	// Finished with TMessage object. Free it and release lock on ROOT global
 	delete tm;
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 
 	// Send message containing histogram (asynchronously)
 	uint64_t tsending = (uint64_t)time(NULL);
@@ -1531,7 +1557,8 @@ void DRootSpy::getMacro(string sender, string &hnamepath, bool include_histos)
 	macro_info_t &the_macro = the_macro_itr->second;
 
 	// Lock access to ROOT global while we access it
-	pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_write_lock();
+	// pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
 
 	TDirectory *savedir = gDirectory;
 	
@@ -1581,7 +1608,8 @@ void DRootSpy::getMacro(string sender, string &hnamepath, bool include_histos)
 
 	// Finished with TMessage object. Free it and release lock on ROOT global
 	delete tm;
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 
 	// Send message containing histogram (asynchronously)
 	::google::protobuf::int64 tsending = (uint64_t)time(NULL);
@@ -1600,7 +1628,8 @@ void DRootSpy::getTree(cMsgMessage &response, string &name, string &path, int64_
 	in_get_tree = true;
 
 	// Lock access to ROOT global while we access it
-	pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_write_lock();
+	// pthread_rwlock_wrlock(gROOTSPY_RW_LOCK);
 
 	// Get pointer to tree
 	TDirectory *savedir = gDirectory;
@@ -1610,7 +1639,8 @@ void DRootSpy::getTree(cMsgMessage &response, string &name, string &path, int64_
 
 	// If object not found, release lock on ROOT global and return
 	if(!obj){
-		pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->release_lock();
+		// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 		in_get_tree = false;
 		return;
 	}
@@ -1618,7 +1648,8 @@ void DRootSpy::getTree(cMsgMessage &response, string &name, string &path, int64_
 	// Make sure this is a TTree
 	if(strcmp(obj->ClassName(), "TTree")){
 		cout << "Request for tree \""<<name<<"\" but that's not a TTree (it's a "<<obj->ClassName()<<")" << endl;
-		pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->release_lock();
+		// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 		in_get_tree = false;
 		return;
 	}
@@ -1650,7 +1681,8 @@ void DRootSpy::getTree(cMsgMessage &response, string &name, string &path, int64_
 	if(!tree_copy){
 		cout << "Unable to make temporary copy of tree for transport!" << endl;
 		if(f) { f->Close(); delete f; f = NULL;}
-		pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+		gROOTSPY_RW_LOCK->release_lock();
+		// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 		in_get_tree = false;
 		return;
 	}
@@ -1688,7 +1720,8 @@ void DRootSpy::getTree(cMsgMessage &response, string &name, string &path, int64_
 
 	// Finished with TMessage object. Free it and release lock on ROOT global
 	delete tm;
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 
 	uint64_t tsending = (uint64_t)time(NULL);
 	response.add("time_sent",  tsending);
@@ -1706,13 +1739,15 @@ void DRootSpy::treeInfo(string sender)
 	in_get_tree_info = true;
 
 	// Lock access to ROOT global while we access it
-	pthread_rwlock_rdlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_read_lock();
+	// pthread_rwlock_rdlock(gROOTSPY_RW_LOCK);
 
 	hist_dir = gDirectory;
 	findTreeObjForMsg(hist_dir, sender);
 
 	// Release ROOT global
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
 	
 	in_get_tree_info = false;
 }
@@ -1727,7 +1762,8 @@ void DRootSpy::treeInfoSync(cMsgMessage &response, string sender)
 	in_get_tree_info = true;
 
 	// Lock access to ROOT global while we access it
-	pthread_rwlock_rdlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->acquire_read_lock();
+	// pthread_rwlock_rdlock(gROOTSPY_RW_LOCK);
 
     hist_dir = gDirectory;
     vector<string> tree_names, tree_titles, tree_paths;
@@ -1744,7 +1780,8 @@ void DRootSpy::treeInfoSync(cMsgMessage &response, string sender)
 	}
 	
 	// Release ROOT global
-	pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
+	gROOTSPY_RW_LOCK->release_lock();
+	// pthread_rwlock_unlock(gROOTSPY_RW_LOCK);
     
     // build message
 	if(!tree_names.empty()){

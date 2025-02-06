@@ -48,7 +48,7 @@ using namespace xmsg;
 #define _DBG__ std::cerr<<__FILE__<<":"<<__LINE__<<std::endl
 #endif
 
-extern pthread_rwlock_t *gROOTSPY_RW_LOCK;
+extern RSLock *gROOTSPY_RW_LOCK;
 extern string gROOTSPY_PROGRAM_NAME;
 
 

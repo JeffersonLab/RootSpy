@@ -63,7 +63,7 @@ private:
 // Concrete class for pthread locks.
 // This class is a simple wrapper around a pointer to a pthread_rwlock_t,
 // implementing the required methods.
-class RSPthreadLock : RSLock {
+class RSPthreadLock : public RSLock {
 public:
     RSPthreadLock(pthread_rwlock_t* lock=nullptr) : lock_(lock) {
         if(lock_==nullptr){
