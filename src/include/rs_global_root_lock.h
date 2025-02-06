@@ -22,6 +22,7 @@
 //  auto rlockptr = japp->GetService<JGlobalRootLock>();
 // rslock = RSLockAdapter<JGlobalRootLock>(rlockptr);
 
+#pragma once
 
 #include <pthread.h>
 // #include <iostream>
