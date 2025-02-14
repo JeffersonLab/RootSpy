@@ -181,12 +181,15 @@ void BeginRun()
 	gROOT->ProcessLine("#include <iostream>");
 	gROOT->ProcessLine("using namespace std;");
 	gROOT->ProcessLine("#define ROOTSPY_MACROS");
-	gROOT->ProcessLine("extern void rs_SetFlag(const string flag, int val);");
-	gROOT->ProcessLine("extern int  rs_GetFlag(const string flag);");
-	gROOT->ProcessLine("extern void rs_ResetHisto(const string hnamepath);");
-	gROOT->ProcessLine("extern void rs_RestoreHisto(const string hnamepath);");
-	gROOT->ProcessLine("extern void InsertSeriesData(string sdata);");
-	gROOT->ProcessLine("extern void InsertSeriesMassFit(string ptype, double mass, double width, double mass_err, double width_err, double unix_time=0.0);");
+	gROOT->ProcessLine("extern \"C\" { void rs_SetFlag(const string flag, int val); }");
+	gROOT->ProcessLine("extern \"C\" { int  rs_GetFlag(const string flag); }");
+	gROOT->ProcessLine("extern \"C\" { void rs_ResetHisto(const string hnamepath); }");
+	gROOT->ProcessLine("extern \"C\" { void rs_RestoreHisto(const string hnamepath); }");
+	gROOT->ProcessLine("extern \"C\" { void rs_ResetAllMacroHistos(const string hnamepath); }");
+	gROOT->ProcessLine("extern \"C\" { void rs_RestoreAllMacroHistos(const string hnamepath); }");
+	gROOT->ProcessLine("extern \"C\" { void rs_SavePad(const string fname, int ipad){} }"); // disable this for RSTimeSeries (it's meant for RSAI)
+	gROOT->ProcessLine("extern \"C\" { void InsertSeriesData(string sdata) }");
+	gROOT->ProcessLine("extern \"C\" { void InsertSeriesMassFit(string ptype, double mass, double width, double mass_err, double width_err, double unix_time=0.0) }");
 
 	// Set flag so macros will automatically reset histograms after
 	// a successful fit.

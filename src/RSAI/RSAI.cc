@@ -197,15 +197,15 @@ void BeginRun()
 	gROOT->ProcessLine("#include <iostream>");
 	gROOT->ProcessLine("using namespace std;");
 	gROOT->ProcessLine("#define ROOTSPY_MACROS");
-	gROOT->ProcessLine("extern void rs_SetFlag(const string flag, int val);");
-	gROOT->ProcessLine("extern int  rs_GetFlag(const string flag);");
-	gROOT->ProcessLine("extern void rs_ResetHisto(const string hnamepath);");
-	gROOT->ProcessLine("extern void rs_RestoreHisto(const string hnamepath);");
-	gROOT->ProcessLine("extern void rs_ResetAllMacroHistos(const string hnamepath);");
-	gROOT->ProcessLine("extern void rs_RestoreAllMacroHistos(const string hnamepath);");
-	gROOT->ProcessLine("extern void rs_SavePad(const string fname, int ipad);");
-	gROOT->ProcessLine("void InsertSeriesData(string sdata){}"); // disable insertion of time series data for RSAI
-	gROOT->ProcessLine("void InsertSeriesMassFit(string ptype, double mass, double width, double mass_err, double width_err, double unix_time=0.0){}"); // (same as previous)
+	gROOT->ProcessLine("extern \"C\" { void rs_SetFlag(const string flag, int val); }");
+	gROOT->ProcessLine("extern \"C\" { int  rs_GetFlag(const string flag); }");
+	gROOT->ProcessLine("extern \"C\" { void rs_ResetHisto(const string hnamepath); }");
+	gROOT->ProcessLine("extern \"C\" { void rs_RestoreHisto(const string hnamepath); }");
+	gROOT->ProcessLine("extern \"C\" { void rs_ResetAllMacroHistos(const string hnamepath); }");
+	gROOT->ProcessLine("extern \"C\" { void rs_RestoreAllMacroHistos(const string hnamepath); }");
+	gROOT->ProcessLine("extern \"C\" { void rs_SavePad(const string fname, int ipad); }");
+	gROOT->ProcessLine("extern \"C\" { void InsertSeriesData(string sdata){} }"); // disable insertion of series data for RootSpy GUI
+	gROOT->ProcessLine("extern \"C\" { void InsertSeriesMassFit(string ptype, double mass, double width, double mass_err, double width_err, double unix_time=0.0){} }"); // (same as previous)
 
 	// Set flag so macros will NOT automatically reset histograms after
 	// a successful fit. This flag is used by RSTimeSeries

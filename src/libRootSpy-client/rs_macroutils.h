@@ -11,6 +11,7 @@ using std::string;
 
 extern std::map<string, set<int> > rs_PadsToSave;  // key=macro basename  val=Tpad numbers to save (0=whole canvas)
 
+extern "C" { // n.b. cling will segfault when trying to call these without the extern "C"!
 void rs_SetFlag(const string flag, int val);
 int  rs_GetFlag(const string flag);
 void rs_ResetHisto(const string hnamepath);
@@ -19,3 +20,4 @@ void rs_ResetAllMacroHistos(const string hnamepath);
 void rs_RestoreAllMacroHistos(const string hnamepath);
 
 void rs_SavePad(const string fname, int ipad);
+}
