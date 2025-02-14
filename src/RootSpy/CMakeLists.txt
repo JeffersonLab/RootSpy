@@ -13,7 +13,7 @@ target_link_libraries(RootSpyExe ROOT::Core ROOT::RIO ROOT::Hist ROOT::Gui ROOT:
 # target_link_libraries(RootSpyExe ROOT::Core ROOT::RIO ROOT::Hist ROOT::Gui)
 
 set_target_properties(RootSpyExe PROPERTIES
-    INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib
+    INSTALL_RPATH_USE_LINK_PATH TRUE
     BUILD_WITH_INSTALL_RPATH TRUE
 )
 
