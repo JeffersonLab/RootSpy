@@ -11,6 +11,8 @@ find_package(ROOT REQUIRED COMPONENTS Core RIO Hist Gui GuiBld RootAuth)
 find_package(Protobuf REQUIRED)
 find_package(ZeroMQ REQUIRED)
 find_package(CURL REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+find_package(EZCA REQUIRED)
 
 # cmsg
 set(CMSG_ROOT "$ENV{cmsg_ROOT}")
@@ -40,11 +42,13 @@ include_directories(${CMSG_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/libRootSpy-client)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/libRootSpy)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/include)
+include_directories(${EZCA_INCLUDE_DIRS})
 
 # Library directories
 link_directories(${ROOT_LIBRARY_DIR})
 link_directories(${CMSG_LIBRARY_DIR})
 link_directories(${xmsg_DIR}/../..)
+link_directories(${EZCA_LIBRARIES})
 
 add_subdirectory(src/libRootSpy)
 add_subdirectory(src/libRootSpy-client)

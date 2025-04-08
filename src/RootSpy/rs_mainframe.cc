@@ -58,7 +58,7 @@
 using namespace std;
 
 #ifdef HAVE_EZCA
-#include <tsDefs.h> 
+//#include <tsDefs.h> 
 #include <cadef.h> 
 #include <ezca.h>
 #endif // HAVE_EZCA
@@ -203,6 +203,7 @@ rs_mainframe::rs_mainframe(const TGWindow *p, UInt_t w, UInt_t h,  bool build_gu
 	// Optionally try and get run number
 	string epics_var_name = "HD:coda:daq:run_number";
 	ezcaGet((char*)(epics_var_name.c_str()), ezcaLong, 1, &epics_run_number);
+        _DBG_ << "EPICS run number: " << epics_run_number << endl;
 	last_epics_run_number_checked = now;
 #endif // HAVE_EZCA
 }
@@ -2041,6 +2042,7 @@ void rs_mainframe::ExecuteMacro(TDirectory *f, string macro)
 	while(!macro_stream.eof()) {
 		string s;
 		getline(macro_stream, s);
+		// _DBG_ << s << "\n";
 		iline++;
 		
 		// Special comment lines allow macro to communicate to RootSpy system
