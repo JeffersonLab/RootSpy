@@ -13,6 +13,7 @@ find_package(ZeroMQ REQUIRED)
 find_package(CURL REQUIRED)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 find_package(EZCA REQUIRED)
+add_compile_definitions(HAVE_EZCA=1)
 
 # cmsg
 set(CMSG_ROOT "$ENV{cmsg_ROOT}")
@@ -48,7 +49,6 @@ include_directories(${EZCA_INCLUDE_DIRS})
 link_directories(${ROOT_LIBRARY_DIR})
 link_directories(${CMSG_LIBRARY_DIR})
 link_directories(${xmsg_DIR}/../..)
-link_directories(${EZCA_LIBRARIES})
 
 add_subdirectory(src/libRootSpy)
 add_subdirectory(src/libRootSpy-client)

@@ -12,6 +12,22 @@ find_path(EZCA_INCLUDE_DIR ezca.h
         $ENV{EPICS_BASE}/../extensions/include
 )
 
+find_path(CADEF_INCLUDE_DIR cadef.h
+    HINTS
+        $ENV{EPICS_BASE}/include
+        $ENV{EPICS_BASE}/../include
+)
+
+find_path(COMPILER_INCLUDE_DIR compilerSpecific.h
+    HINTS
+        $ENV{EPICS_BASE}/include/compiler/gcc
+)
+
+find_path(OSDEVENT_INCLUDE_DIR osdEvent.h
+    HINTS
+        $ENV{EPICS_BASE}/include/os/Linux
+)
+
 # Detect host arch (you could enhance this by running EpicsHostArch)
 set(EPICS_HOST_ARCH $ENV{EPICS_HOST_ARCH})
 if(NOT EPICS_HOST_ARCH)
@@ -49,6 +65,9 @@ find_package_handle_standard_args(EZCA DEFAULT_MSG
 if(EZCA_FOUND)
     set(EZCA_INCLUDE_DIRS
         ${EZCA_INCLUDE_DIR}
+        ${CADEF_INCLUDE_DIR}
+        ${COMPILER_INCLUDE_DIR}
+        ${OSDEVENT_INCLUDE_DIR}
     )
     set(EZCA_LIBRARIES
         ${EZCA_LIB}
