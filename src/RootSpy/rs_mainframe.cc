@@ -204,7 +204,7 @@ rs_mainframe::rs_mainframe(const TGWindow *p, UInt_t w, UInt_t h,  bool build_gu
 	string epics_var_name = "HD:coda:daq:run_number";
 	ezcaGet((char*)(epics_var_name.c_str()), ezcaLong, 1, &epics_run_number);
         _DBG_ << "EPICS run number: " << epics_run_number << endl;
-	last_epics_run_number_checked = now;
+        last_epics_run_number_checked = now;
 #endif // HAVE_EZCA
 }
 
@@ -1001,10 +1001,9 @@ void rs_mainframe::DoTimer(void) {
 			}
 		}
 	}
-
 #ifdef HAVE_EZCA
-	// Optionally try and get run number every 5 seconds
-	if( (now-last_epics_run_number_checked) >=5 ){
+	// Optionally try and get run number every 60 seconds
+	if( (now-last_epics_run_number_checked) >= 60 ){
 		string epics_var_name = "HD:coda:daq:run_number";
 		long old_run = epics_run_number;
 		if(EZCA_OK == ezcaGet((char*)(epics_var_name.c_str()), ezcaLong, 1, &epics_run_number)){
@@ -1365,7 +1364,7 @@ void rs_mainframe::ELogEntryThread(void)
 	ezcaSetRetryCount(50); // default in ezca lib is 599
 	string epics_var_name = "HD:coda:daq:run_number";
 	int err = ezcaGet((char*)(epics_var_name.c_str()), ezcaLong, 1, &epics_run_number);
-	if(err != EZCA_OK) epics_run_number = 0;
+        //	if(err != EZCA_OK) epics_run_number = 0;
 #endif // HAVE_EZCA
 
 	// Make list of all hnamepaths for all tabs
