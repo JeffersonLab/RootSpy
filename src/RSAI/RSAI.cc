@@ -84,14 +84,14 @@ extern set<rs_serialized*> MACROS_TO_REGISTER_XMSG;
 namespace config {
 	static string ROOTSPY_UDL = "cMsg://127.0.0.1/cMsg/rootspy";
 	static string CMSG_NAME = "<not set here. see below>";
-	static string SESSION = "";
+	// static string SESSION = "";
 		
 	static double POLL_DELAY = 10;   // time between polling runs
 	static double MIN_POLL_DELAY = 5;
 	
 	// run management 
 	//bool KEEP_RUNNING = true;
-	static bool FORCE_START = false;
+	// static bool FORCE_START = false;
 	
 	bool DONE = false;
 	bool RUN_IN_PROGRESS = false;
@@ -112,6 +112,7 @@ void BeginRun();
 void MainLoop(void);
 void GetAllHists(uint32_t Twait=2); // Twait is in seconds
 void ExecuteMacro(TDirectory *f, string macro);
+void ResetCanvas(TCanvas* c);
 void ParseCommandLineArguments(int &narg, char *argv[]);
 void Usage(void);
 
@@ -187,7 +188,7 @@ void BeginRun()
 	if( USE_XMSG ) RS_XMSG = new rs_xmsg(ROOTSPY_UDL, CMSG_NAME);
 	
 	// set session name to some default
-	if(SESSION.empty()) SESSION="halldsession";
+	// if(SESSION.empty()) SESSION="halldsession";
 
 	// Create TCanvas, but set ROOT to batch mode so that it doesn't actually open a window.
 	gROOT->SetBatch(kTRUE);
@@ -255,6 +256,7 @@ void MainLoop(void)
 			auto the_hinfo = hdef.hists.begin()->second;
 			c1->cd();
 			c1->Clear();
+			if(VERBOSE>1)  _DBG_ << "Executing macro: " << hnamepath << endl;
 			if(the_hinfo.Nkeys == 1){
 				ExecuteMacro(RS_INFO->sum_dir, the_hinfo.macroString);
 			}else{
@@ -525,7 +527,13 @@ void ExecuteMacro(TDirectory *f, string macro)
 	// maps to a static method of TColor which changes the palette
 	// for the current TCanvas. (At least that is how I think this
 	// works!)
-	gStyle->SetPalette(); // reset to default 	
+	gStyle->SetPalette(); // reset to default 
+
+	// Reset all attributes of TCanvas to ensure one macro does not 
+	// bleed settings to another.
+	if (gPad && gPad->InheritsFrom("TCanvas")) {
+		ResetCanvas(static_cast<TCanvas*>(gPad));
+	}
 
 	// execute script line-by-line
 	// maybe we should do some sort of sanity check first?
@@ -554,6 +562,40 @@ void ExecuteMacro(TDirectory *f, string macro)
 	pthread_rwlock_unlock(ROOT_MUTEX);
 
 }
+
+//-------------------
+// ResetCanvas
+//
+// Reset the attributes of the existing canvas to defaults. This is called
+// before executing a macro to ensure there are no lingering settings from
+// the previous macro that may have drawn on this canvas.
+//
+// Upon entry, it is assumed that the gStyle object has been updated already
+// so that settings from it may be reapplied.
+//-------------------
+void ResetCanvas(TCanvas* c) {
+
+	if( c == nullptr ) return; // bulletproof
+
+	// clear primatives (this will already have been done, but this does not hurt)
+	c->Clear();
+  
+	// reset pad attributes
+	c->ResetAttPad();
+	c->ResetAttLine();
+	c->ResetAttFill();
+  
+	// reapply global style
+	c->UseCurrentStyle();
+  
+	// disable any log scales
+	c->SetLogx(0);
+	c->SetLogy(0);
+	c->SetLogz(0);
+  
+	// finally, update the display
+	c->Update();
+  }
 
 //-----------
 // ParseCommandLineArguments
@@ -587,7 +629,8 @@ void ParseCommandLineArguments(int &narg, char *argv[])
 		{"poll-delay",     required_argument, 0,  'p' },
 		{"udl",            required_argument, 0,  'u' },
 		{"server",         required_argument, 0,  's' },
-		{"session-name",   no_argument,       0,  'S' },
+		// {"session-name",   required_argument, 0,  'S' },
+		{"min-rsai-events",required_argument, 0,  'm' },
 		{"verbose",        no_argument,       0,  'V' },
 		
 		{0, 0, 0, 0  }
@@ -595,7 +638,7 @@ void ParseCommandLineArguments(int &narg, char *argv[])
 	
 	int opt = 0;
 	int long_index = 0;
-	while ((opt = getopt_long(narg, argv,"hR:d:l:p:u:s:A:BF:PHY:v",
+	while ((opt = getopt_long(narg, argv,"hd:l:R:p:u:s:m:v",
 							  long_options, &long_index )) != -1) {
 		switch (opt) {
 			case 'R':
@@ -610,9 +653,9 @@ void ParseCommandLineArguments(int &narg, char *argv[])
 				if(optarg == NULL) Usage();
 				SYMLINK_DIR = optarg;
 				break;
-			case 'f' :
-				FORCE_START = true;
-				break;
+			// case 'f' :
+			// 	FORCE_START = true;
+			// 	break;
 			case 'p' : 
 				if(optarg == NULL) Usage();
 				POLL_DELAY = atoi(optarg);
@@ -627,8 +670,11 @@ void ParseCommandLineArguments(int &narg, char *argv[])
 				ROOTSPY_UDL += optarg;
 				ROOTSPY_UDL += "/cMsg/rootspy";
 				break;
-			case 'S' :
-				SESSION = optarg;
+			// case 'S' :
+			// 	SESSION = optarg;
+			// 	break;
+			case 'm' :
+				MIN_EVENTS_RSAI = atoi(optarg);
 				break;
 			case 'v' :
 				VERBOSE++;
@@ -649,7 +695,7 @@ void ParseCommandLineArguments(int &narg, char *argv[])
 	cout << "      OUTPUT_DIR = " << OUTPUT_DIR << endl;
 	cout << "     SYMLINK_DIR = " << (SYMLINK_DIR.empty() ? "<none>":SYMLINK_DIR) << endl;
 	cout << "     ROOTSPY_UDL = " << ROOTSPY_UDL << endl;
-	cout << "         SESSION = " << SESSION << endl;
+	// cout << "         SESSION = " << SESSION << endl;
 	cout << "      RUN_NUMBER = " << RUN_NUMBER << endl;
 	cout << "      POLL_DELAY = " << POLL_DELAY << endl;
 	cout << "  MIN_POLL_DELAY = " << MIN_POLL_DELAY << endl;
@@ -706,6 +752,8 @@ void Usage(void)
 	cout<<"   -s,--server server-name   Set RootSpy UDL to point to server IP/hostname"<<endl;
 	cout<<"   -R,--run-number number    The number of the current run" << endl;
 	cout<<"   -p,--poll-delay time      Time (in seconds) to wait between polling seconds" << endl;
+	cout<<"   -m,--min-rsai-events N    Sets event scale used by macros to decided how often to run (def. " << MIN_EVENTS_RSAI <<")" << endl;
+	// cout<<"   -S,--session-name session Set session name (unused)" << endl;
 	cout<<"   -v,--verbose              Increase verbosity (can use multiple times)"<<endl;
 	cout<<endl;
 	cout<<endl;
