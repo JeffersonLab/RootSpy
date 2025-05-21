@@ -595,7 +595,7 @@ void ResetCanvas(TCanvas* c) {
   
 	// finally, update the display
 	c->Update();
-  }
+}
 
 //-----------
 // ParseCommandLineArguments
