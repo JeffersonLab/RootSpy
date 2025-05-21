@@ -54,6 +54,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/include)
 link_directories(${ROOT_LIBRARY_DIR})
 link_directories(${CMSG_LIBRARY_DIR})
 link_directories(${xmsg_DIR}/../..)
+link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
 add_subdirectory(src/libRootSpy)
 add_subdirectory(src/libRootSpy-client)
