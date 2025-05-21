@@ -162,6 +162,7 @@ class rs_mainframe:public TGMainFrame {
 
 		viewStyle_t_rs viewStyle_rs;
 		void ExecuteMacro(TDirectory* f, string macro);
+		void ResetCanvas(TCanvas* c);
 		void DrawMacro(TCanvas*the_canvas, hinfo_t &the_hinfo);
 		void DrawMacro(TCanvas*the_canvas, hdef_t &the_hdef);
 		void DropAllHists(void);

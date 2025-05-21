@@ -82,6 +82,7 @@ void signal_stop_handler(int signum);
 bool GetHists(const set<string> &hnamepaths, bool send_request=true);
 void RegisterQueuedItems(void);
 void ExecuteMacro(TDirectory *f, string macro);
+void ResetCanvas(TCanvas* c);
 void ParseCommandLineArguments(int &narg, char *argv[]);
 void Usage(void);
 
@@ -515,6 +516,12 @@ void ExecuteMacro(TDirectory *f, string macro)
 	// works!)
 	gStyle->SetPalette(); // reset to default 	
 
+	// Reset all attributes of TCanvas to ensure one macro does not 
+	// bleed settings to another.
+	if (gPad && gPad->InheritsFrom("TCanvas")) {
+		ResetCanvas(static_cast<TCanvas*>(gPad));
+	}
+
 	TVirtualPad *top_pad = gPad;
 
 	// execute script line-by-line
@@ -565,6 +572,40 @@ void ExecuteMacro(TDirectory *f, string macro)
 	// Unlock ROOT
 	pthread_rwlock_unlock(ROOT_MUTEX);
 
+}
+
+//-------------------
+// ResetCanvas
+//
+// Reset the attributes of the existing canvas to defaults. This is called
+// before executing a macro to ensure there are no lingering settings from
+// the previous macro that may have drawn on this canvas.
+//
+// Upon entry, it is assumed that the gStyle object has been updated already
+// so that settings from it may be reapplied.
+//-------------------
+void ResetCanvas(TCanvas* c) {
+
+	if( c == nullptr ) return; // bulletproof
+
+	// clear primatives (this will already have been done, but this does not hurt)
+	c->Clear();
+  
+	// reset pad attributes
+	c->ResetAttPad();
+	c->ResetAttLine();
+	c->ResetAttFill();
+  
+	// reapply global style
+	c->UseCurrentStyle();
+  
+	// disable any log scales
+	c->SetLogx(0);
+	c->SetLogy(0);
+	c->SetLogz(0);
+  
+	// finally, update the display
+	c->Update();
 }
 
 //-----------

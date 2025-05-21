@@ -2031,6 +2031,12 @@ void rs_mainframe::ExecuteMacro(TDirectory *f, string macro)
 	// works!)
 	gStyle->SetPalette(); // reset to default 	
 
+	// Reset all attributes of TCanvas to ensure one macro does not 
+	// bleed settings to another.
+	if (gPad && gPad->InheritsFrom("TCanvas")) {
+		ResetCanvas(static_cast<TCanvas*>(gPad));
+	}
+
 	TDirectory *savedir = gDirectory;
 	f->cd();
 
@@ -2113,6 +2119,40 @@ void rs_mainframe::ExecuteMacro(TDirectory *f, string macro)
 	pthread_rwlock_unlock(ROOT_MUTEX);
 
 }
+
+//-------------------
+// ResetCanvas
+//
+// Reset the attributes of the existing canvas to defaults. This is called
+// before executing a macro to ensure there are no lingering settings from
+// the previous macro that may have drawn on this canvas.
+//
+// Upon entry, it is assumed that the gStyle object has been updated already
+// so that settings from it may be reapplied.
+//-------------------
+void rs_mainframe::ResetCanvas(TCanvas* c) {
+
+	if( c == nullptr ) return; // bulletproof
+
+	// clear primatives (this will already have been done, but this does not hurt)
+	c->Clear();
+  
+	// reset pad attributes
+	c->ResetAttPad();
+	c->ResetAttLine();
+	c->ResetAttFill();
+  
+	// reapply global style
+	c->UseCurrentStyle();
+  
+	// disable any log scales
+	c->SetLogx(0);
+	c->SetLogy(0);
+	c->SetLogz(0);
+  
+	// finally, update the display
+	c->Update();
+  }
 
 //-------------------
 // MergeMacroFiles
