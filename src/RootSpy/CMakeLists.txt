@@ -14,9 +14,15 @@ target_link_libraries(RootSpyExe
   PRIVATE
     RootSpy-client
     ROOT::Core ROOT::RIO ROOT::Hist ROOT::Gui ROOT::GuiBld ROOT::RootAuth
-    ${EZCA_LIBRARIES}
     ${READLINE_LIBRARY}
 )
+
+if (EZCA_FOUND)
+  target_link_libraries(RootSpyExe
+    PRIVATE
+      ${EZCA_LIBRARIES}
+  )
+endif()
 
 set_target_properties(RootSpyExe PROPERTIES
     INSTALL_RPATH_USE_LINK_PATH TRUE
