@@ -1657,7 +1657,7 @@ void rs_xmsg::RegisterFinalHistogram(string server, RSPayloadMap &payload_map)
 //---------------------------------
 void rs_xmsg::SeedHnamepathsSet(void *vhnamepaths, bool request_histo, bool request_macro)
 {
-	set<string> &hnamepaths = *(set<string>*)vhnamepaths;
+	set<string> hnamepaths = *(set<string>*)vhnamepaths;
 
 	/// This is just a wrapper for the "list" version below.
 	list<string> lhnamepaths;
