@@ -274,7 +274,9 @@ void MainLoop(void)
 			if( ! rs_PadsToSave.empty() ){
 
 				// Save whole canvas to temporary file.
-				string tmp_img_fname = OUTPUT_DIR + "/tmp_canvas.png";
+				// string tmp_img_fname = OUTPUT_DIR + "/tmp_canvas.png";
+				pid_t pid = getpid();
+				string tmp_img_fname = OUTPUT_DIR + "/tmp_canvas_" + std::to_string(pid) + ".png";
 				c1->Update();
 				c1->SaveAs(tmp_img_fname.c_str());
 
